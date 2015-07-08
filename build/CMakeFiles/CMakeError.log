@@ -1,0 +1,26 @@
+Determining if files pthread.h exist failed with the following output:
+Change Dir: C:/Users/Ben/floobits/4rChon/pong/build/CMakeFiles/CMakeTmp
+
+Run Build Command:C:/MinGW/bin/mingw32-make.exe "cmTryCompileExec445571122/fast"
+C:/MinGW/bin/mingw32-make.exe -f CMakeFiles\cmTryCompileExec445571122.dir\build.make CMakeFiles/cmTryCompileExec445571122.dir/build
+mingw32-make.exe[1]: Entering directory 'C:/Users/Ben/floobits/4rChon/pong/build/CMakeFiles/CMakeTmp'
+"C:\Program Files (x86)\CMake 2.8\bin\cmake.exe" -E cmake_progress_report C:\Users\Ben\floobits\4rChon\pong\build\CMakeFiles\CMakeTmp\CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec445571122.dir/CheckIncludeFiles.c.obj
+C:\MinGW\bin\gcc.exe    -o CMakeFiles\cmTryCompileExec445571122.dir\CheckIncludeFiles.c.obj   -c C:\Users\Ben\floobits\4rChon\pong\build\CMakeFiles\CMakeTmp\CheckIncludeFiles.c
+C:\Users\Ben\floobits\4rChon\pong\build\CMakeFiles\CMakeTmp\CheckIncludeFiles.c:2:21: fatal error: pthread.h: No such file or directory
+ #include <pthread.h>
+                     ^
+compilation terminated.
+CMakeFiles\cmTryCompileExec445571122.dir\build.make:59: recipe for target 'CMakeFiles/cmTryCompileExec445571122.dir/CheckIncludeFiles.c.obj' failed
+mingw32-make.exe[1]: *** [CMakeFiles/cmTryCompileExec445571122.dir/CheckIncludeFiles.c.obj] Error 1
+mingw32-make.exe[1]: Leaving directory 'C:/Users/Ben/floobits/4rChon/pong/build/CMakeFiles/CMakeTmp'
+Makefile:116: recipe for target 'cmTryCompileExec445571122/fast' failed
+mingw32-make.exe: *** [cmTryCompileExec445571122/fast] Error 2
+
+Source:
+/* */
+#include <pthread.h>
+
+
+int main(){return 0;}
+
