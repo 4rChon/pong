@@ -10,6 +10,8 @@ Display::Display(int WIDTH, int HEIGHT)
     this->HEIGHT = HEIGHT;
     gRenderer = NULL;
     gWindow = NULL;
+    SDL_Surface* gScreenSurface = NULL;
+    SDL_Surface* gPlayer = NULL;
 }
 
 bool Display::init()
@@ -43,7 +45,51 @@ bool Display::init()
         return false;
     }
     
+    //gScreenSurface = SDL_GetWindowSurface(gWindow);
+    //
+    //int imgFlags = IMG_INIT_PNG;
+    //if(!(IMG_Init(imgFlags) & imgFlags))
+    //{
+    //    printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
+    //    return false;
+    //}
+    
     return true;    
+}
+
+bool Display::loadMedia()
+{
+    gPlayer = SDL_LoadBMP("../res/player/player.bmp");
+    if(!gPlayer)
+    {
+        printf("Unable to load image %s! SDL Error: %s\n", "player.bmp", SDL_GetError());
+        return false;
+    }
+    return true;
+}
+
+SDL_Texture* Display::loadTexture(std::string path)
+{
+    SDL_Texture* newTexture = NULL;
+    
+    SDL_Surface* loadedSurface = IMG_Load(path.c_str());
+    if(!loadedSurface)
+    {
+        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());        
+        return newTexture;
+    }
+
+    newTexture= SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+
+    if(!newTexture)
+    {
+        printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
+        return newTexture;
+    }
+
+    SDL_FreeSurface(loadedSurface);        
+
+    return newTexture;
 }
 
 void Display::close()
@@ -84,6 +130,15 @@ void Display::draw(std::vector<Player> players, Ball ball)
         return;
     }
     
+    /*if(!loadMedia())
+    {
+        printf("Failed to load media!\n");
+        return;        
+    }
+    
+    SDL_BlitSurface(gPlayer, NULL, gScreenSurface, NULL);
+    SDL_UpdateWindowSurface(gWindow);*/
+    
     double t = 0.0;
     const double dt = 1.0/60;
     
@@ -106,7 +161,7 @@ void Display::draw(std::vector<Player> players, Ball ball)
         
         while(accumulator >= dt)
         {
-            velocity = (velocity + 350) * dt;
+            velocity = (velocity + 550) * dt;
             accumulator -= dt;
             t += dt;            
         }
@@ -126,16 +181,42 @@ void Display::draw(std::vector<Player> players, Ball ball)
                         break;
                         case SDLK_RIGHT: players[0].set_velocity(velocity);
                         break;
-                        case SDLK_DOWN: players[0].set_velocity(0);
-                        break;
-                        /*case SDLK_a: players[1].set_velocity(-1 * velocity);
+                        case SDLK_a: players[1].set_velocity(-1 * velocity);
                         break;
                         case SDLK_d: players[1].set_velocity(velocity);
                         break;
-                        case SDLK_w: players[1].set_velocity(0);
-                        break;*/
+                        default:
+                            break;
                     }                    
                 }
+                break;
+                case SDL_KEYUP:
+                {
+                    switch(e.key.keysym.sym)
+                    {
+                        case SDLK_LEFT:
+                            if(players[0].get_velocity() < 0)
+                                players[0].set_velocity(0);
+                            break;
+                        case SDLK_RIGHT:
+                            if(players[0].get_velocity() > 0)
+                                players[0].set_velocity(0);
+                            break;
+                        case SDLK_a:
+                            if(players[1].get_velocity() < 0)
+                                players[1].set_velocity(0);
+                            break;
+                        case SDLK_d:
+                            if(players[1].get_velocity() > 0)
+                                players[1].set_velocity(0);
+                            break;
+                        default:
+                           break;
+                    }
+                }
+                break;
+                default:
+                    break;
             }
         }
         
@@ -157,15 +238,14 @@ void Display::draw(std::vector<Player> players, Ball ball)
                 else
                     players[i].set_x(0);
             
-            int x_dist = std::abs((ball.get_x() + (ball.get_size()/2)) - (players[i].get_x() + (players[i].get_width()/2)));
-            int y_dist = std::abs((ball.get_y() + (ball.get_size()/2)) - (players[i].get_y() + (players[i].get_height()/2)));
+            int x_dist = (ball.get_x() + (ball.get_size()/2)) - (players[i].get_x() + (players[i].get_width()/2));
+            int y_dist = (ball.get_y() + (ball.get_size()/2)) - (players[i].get_y() + (players[i].get_height()/2));
             
-            if(x_dist < ball.get_size()/2 + players[i].get_width()/2 && y_dist < ball.get_size()/2 + players[i].get_height()/2)
+            if(std::abs(x_dist) < ball.get_size()/2 + players[i].get_width()/2 && std::abs(y_dist) < ball.get_size()/2 + players[i].get_height()/2)
             {
                 ball.toggle_y_vel();
-                ball.set_velocity(ball.get_x_vel(), ball.get_y_vel() * 1.05);
+                ball.set_velocity(ball.get_x_vel() + (0.05 * (players[i].get_velocity() + x_dist)), ball.get_y_vel() * 1.05);
                 std::cout << ball.toString() << std::endl;
-                //ball.set_x_vel();
             }
             draw_player(players[i]);
         }
@@ -177,23 +257,10 @@ void Display::draw(std::vector<Player> players, Ball ball)
         if(ball.get_y() + ball.get_y_vel() <= (this->HEIGHT-ball.get_size()) && ball.get_y() + ball.get_y_vel() >= 0)
                 ball.move();
             else
-            {
-                ball.set_x(WIDTH/2);
-                ball.set_y(HEIGHT/2);
-            }        
+                ball.reset(WIDTH/2, HEIGHT/2);
             
         draw_ball(ball);
         
-        /*bottom collision
-        x_dist = ball.get_x() - player.get_x()
-        y_dist = ball.get_y() - player.get_y()
-        
-        if(x_dist)
-        ball.get_x() + ball.get_size() > player.get_x() && < player.get_x() + player.get_width()
-        ball.get_y() + ball.get_size() > player.get_y() && < player.get_x() + player.get_height()
-        ball.get_x() > player.get_x() && < player.get_x() + player.get_width()
-        */
-        //std::cout << ball.toString() << std::endl;
         SDL_RenderPresent(gRenderer);
         SDL_UpdateWindowSurface(gWindow);        
     }    

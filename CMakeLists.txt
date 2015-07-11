@@ -33,7 +33,7 @@ link_directories(${SDL_LIBRARY})
 set(SDL_LIBRARIES "SDL2")
 
 if(${WIN32})
-    set(SDL_LIBRARIES "mingw32;SDL2main;${SDL_LIBRARIES}")
+    set(SDL_LIBRARIES "mingw32;SDL2main;${SDL_LIBRARIES};SDL2_image")
 endif()
 
 add_executable(pong

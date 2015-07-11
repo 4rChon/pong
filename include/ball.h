@@ -10,9 +10,10 @@ class Ball
         double x_vel;
         double y_vel;
         int size;
+        double max_vel;
     public:
         Ball(int x, int y);
-        Ball(int x, int y, int x_vel, int y_vel, int size);
+        Ball(int x, int y, int x_vel, int y_vel, int size, double max_vel);
         void move();
         void set_x(int x);
         void set_y(int y);
@@ -24,5 +25,6 @@ class Ball
         int get_size();
         void toggle_x_vel();
         void toggle_y_vel();
+        void reset(int x, int y);
         std::string toString();
 };
