@@ -111,15 +111,27 @@ void Display::draw_player(Player player)
 
 void Display::draw_ball(Ball ball)
 {
-    SDL_Rect fillRect = {ball.get_x(), ball.get_y(), ball.get_size(), ball.get_size()};
+    SDL_Rect fillRect = {int(ball.get_x()), int(ball.get_y()), ball.get_size(), ball.get_size()};
     SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderFillRect(gRenderer, &fillRect);
+
+    SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
+    if(ball.get_y_vel() > 0)
+    {
+        int dist = int((HEIGHT - ball.get_y()) * ball.get_x_vel()/ball.get_y_vel());
+        SDL_RenderDrawLine(gRenderer, int(ball.get_x()) + ball.get_size()/2, int(ball.get_y()) + ball.get_size()/2, int(ball.get_x()) + ball.get_size()/2 + dist, HEIGHT);
+    }
+    else
+    {
+        int dist = int((ball.get_y()) * ball.get_x_vel()/ball.get_y_vel());
+        SDL_RenderDrawLine(gRenderer, int(ball.get_x()) + ball.get_size()/2, int(ball.get_y()) + ball.get_size()/2, int(ball.get_x()) + ball.get_size()/2 - dist, 0);
+    }
 }
 
 void Display::draw_field()
 {
     SDL_SetRenderDrawColor(gRenderer, 0xAA, 0xAA, 0xAA, 0xFF);
-    SDL_RenderDrawLine(gRenderer, 0, int(HEIGHT/2), WIDTH, int(HEIGHT/2));
+    SDL_RenderDrawLine(gRenderer, 0, int(HEIGHT/2), WIDTH, int(HEIGHT/2));    
 }
 
 void Display::draw(std::vector<Player> players, Ball ball)
@@ -244,7 +256,7 @@ void Display::draw(std::vector<Player> players, Ball ball)
             if(std::abs(x_dist) < ball.get_size()/2 + players[i].get_width()/2 && std::abs(y_dist) < ball.get_size()/2 + players[i].get_height()/2)
             {
                 ball.toggle_y_vel();
-                ball.set_velocity(ball.get_x_vel() + (0.05 * (players[i].get_velocity() + x_dist)), ball.get_y_vel() * 1.05);
+                ball.set_velocity(ball.get_x_vel() + players[i].get_velocity() + (0.05 * x_dist), ball.get_y_vel() * 1.05);
                 std::cout << ball.toString() << std::endl;
             }
             draw_player(players[i]);

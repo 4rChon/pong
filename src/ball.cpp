@@ -1,7 +1,7 @@
 #include <ball.h>
 #include <sstream>
 
-Ball::Ball(int x, int y)
+Ball::Ball(double x, double y)
 {
     this->x = x;
     this->y = y;
@@ -11,7 +11,7 @@ Ball::Ball(int x, int y)
     this->max_vel = 8;
 }
 
-Ball::Ball(int x, int y, int x_vel, int y_vel, int size, double max_vel)
+Ball::Ball(double x, double y, double x_vel, double y_vel, int size, double max_vel)
 {
     this->x = x;
     this->y = y;
@@ -23,16 +23,16 @@ Ball::Ball(int x, int y, int x_vel, int y_vel, int size, double max_vel)
 
 void Ball::move()
 {
-    this->x += int(this->x_vel);
-    this->y += int(this->y_vel);
+    this->x += this->x_vel;
+    this->y += this->y_vel;
 }
 
-void Ball::set_x(int x)
+void Ball::set_x(double x)
 {
     this->x = x;
 }
 
-void Ball::set_y(int y)
+void Ball::set_y(double y)
 {
     this->y = y;
 }
@@ -47,12 +47,12 @@ void Ball::set_velocity(double x_vel, double y_vel)
     this->y_vel = y_vel;
 }
 
-int Ball::get_x()
+double Ball::get_x()
 {
     return this->x;
 }
 
-int Ball::get_y()
+double Ball::get_y()
 {
     return this->y;
 }
@@ -81,7 +81,7 @@ void Ball::toggle_y_vel()
     this->y_vel *= -1;
 }
 
-void Ball::reset(int x, int y)
+void Ball::reset(double x, double y)
 {
     this->x = x;
     this->y = y;
