@@ -9,6 +9,8 @@ Player::Player(int id, int x, int y)
     this->width = 20;
     this->height = 8;
     this->velocity = 0;
+    
+    this->sprite = NULL;
 }
 
 Player::Player(int id, int x, int y, int width, int height)
@@ -19,6 +21,8 @@ Player::Player(int id, int x, int y, int width, int height)
     this->width = width;
     this->height = height;
     this->velocity = 0;
+    
+    this->sprite = NULL;
 }
 
 void Player::move()
@@ -34,6 +38,11 @@ void Player::set_x(int x)
 void Player::set_y(int y)
 {
     this->y = y;
+}
+
+void Player::set_sprite(SDL_Texture* sprite)
+{
+    this->sprite = sprite;
 }
 
 void Player::set_velocity(double velocity)
@@ -64,6 +73,11 @@ int Player::get_width() const
 double Player::get_velocity() const
 {
     return this->velocity;
+}
+
+SDL_Texture* Player::get_sprite()
+{
+    return this->sprite;
 }
 
 std::string Player::toString() const

@@ -8,10 +8,10 @@ Display::Display(int WIDTH, int HEIGHT)
 {
     this->WIDTH = WIDTH;
     this->HEIGHT = HEIGHT;
-    gRenderer = NULL;
-    gWindow = NULL;
-    SDL_Surface* gScreenSurface = NULL;
-    SDL_Surface* gPlayer = NULL;
+    this->gRenderer = NULL;
+    this->gWindow = NULL;
+    this->gBackgroundTexture = NULL;
+    this->gScreenSurface = NULL;
 }
 
 bool Display::init()
@@ -57,17 +57,17 @@ bool Display::init()
     return true;    
 }
 
-bool Display::loadMedia()
+/*bool Display::loadMedia()
 {
-    gPlayer = SDL_LoadBMP("../res/player/player.bmp");
-    if(!gPlayer)
-    {
-        printf("Unable to load image %s! SDL Error: %s\n", "player.bmp", SDL_GetError());
-        return false;
-    }
+    //gPlayer = SDL_LoadBMP("../res/player/player.bmp");
+    //if(!gPlayer)
+    //{
+    //    printf("Unable to load image %s! SDL Error: %s\n", "player.bmp", SDL_GetError());
+    //    return false;
+    //}
     return true;
 }
-
+*/
 SDL_Texture* Display::loadTexture(std::string path)
 {
     SDL_Texture* newTexture = NULL;
@@ -79,7 +79,7 @@ SDL_Texture* Display::loadTexture(std::string path)
         return newTexture;
     }
 
-    newTexture= SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+    newTexture=SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
 
     if(!newTexture)
     {
@@ -96,26 +96,48 @@ void Display::close()
 {
     SDL_DestroyRenderer(gRenderer);
     SDL_DestroyWindow(gWindow);
+    SDL_FreeSurface(gScreenSurface);
     gRenderer = NULL;
     gWindow = NULL;
+    gScreenSurface = NULL;
     
     SDL_Quit();
 }
 
 void Display::draw_player(Player player)
 {
-    SDL_Rect fillRect = {player.get_x(), player.get_y(), player.get_width(), player.get_height()};
-    SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    SDL_RenderFillRect(gRenderer, &fillRect);
+    //SDL_Rect fillRect = {player.get_x(), player.get_y(), player.get_width(), player.get_height()};
+    //SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    //SDL_RenderFillRect(gRenderer, &fillRect);    
+    SrcR.x = 0;
+    SrcR.y = 0;
+    SrcR.w = player.get_width();
+    SrcR.h = player.get_height();
+    DestR.x = player.get_x();
+    DestR.y = player.get_y();
+    DestR.w = player.get_width();
+    DestR.h = player.get_height();
+    SDL_RenderCopy(gRenderer, player.get_sprite(), &SrcR, &DestR);
 }
 
 void Display::draw_ball(Ball ball)
 {
-    SDL_Rect fillRect = {int(ball.get_x()), int(ball.get_y()), ball.get_size(), ball.get_size()};
-    SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    SDL_RenderFillRect(gRenderer, &fillRect);
+    //SDL_Rect fillRect = {int(ball.get_x()), int(ball.get_y()), ball.get_size(), ball.get_size()};
+    //SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    //SDL_RenderFillRect(gRenderer, &fillRect);
 
-    SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
+    SrcR.x = 0;
+    SrcR.y = 0;
+    SrcR.w = ball.get_size();
+    SrcR.h = ball.get_size();
+    DestR.x = ball.get_x();
+    DestR.y = ball.get_y();
+    DestR.w = ball.get_size();
+    DestR.h = ball.get_size();
+    SDL_RenderCopy(gRenderer, ball.get_sprite(), &SrcR, &DestR);
+
+    // Do not release the lasers
+    /*SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
     if(ball.get_y_vel() > 0)
     {
         int dist = int((HEIGHT - ball.get_y()) * ball.get_x_vel()/ball.get_y_vel());
@@ -125,13 +147,22 @@ void Display::draw_ball(Ball ball)
     {
         int dist = int((ball.get_y()) * ball.get_x_vel()/ball.get_y_vel());
         SDL_RenderDrawLine(gRenderer, int(ball.get_x()) + ball.get_size()/2, int(ball.get_y()) + ball.get_size()/2, int(ball.get_x()) + ball.get_size()/2 - dist, 0);
-    }
+    }*/
 }
 
 void Display::draw_field()
 {
-    SDL_SetRenderDrawColor(gRenderer, 0xAA, 0xAA, 0xAA, 0xFF);
-    SDL_RenderDrawLine(gRenderer, 0, int(HEIGHT/2), WIDTH, int(HEIGHT/2));    
+    SrcR.x = 0;
+    SrcR.y = 0;
+    SrcR.w = WIDTH;
+    SrcR.h = HEIGHT;
+    DestR.x = 0;
+    DestR.y = 0;
+    DestR.w = WIDTH;
+    DestR.h = HEIGHT;
+    //SDL_SetRenderDrawColor(gRenderer, 0xAA, 0xAA, 0xAA, 0xFF);
+    //SDL_RenderDrawLine(gRenderer, 0, int(HEIGHT/2), WIDTH, int(HEIGHT/2));
+    SDL_RenderCopy(gRenderer, this->gBackgroundTexture, &SrcR, &DestR);
 }
 
 void Display::draw(std::vector<Player> players, Ball ball)
@@ -142,14 +173,18 @@ void Display::draw(std::vector<Player> players, Ball ball)
         return;
     }
     
-    /*if(!loadMedia())
+/*    if(!loadMedia())
     {
         printf("Failed to load media!\n");
         return;        
-    }
+    }*/
     
-    SDL_BlitSurface(gPlayer, NULL, gScreenSurface, NULL);
-    SDL_UpdateWindowSurface(gWindow);*/
+    for(std::size_t i = 0; i < players.size(); i++)
+    {
+        players[i].set_sprite(loadTexture("../res/player/player.bmp"));
+    }
+    ball.set_sprite(loadTexture("../res/ball/ball.bmp"));
+    this->gBackgroundTexture = loadTexture("../res/background/field.bmp");
     
     double t = 0.0;
     const double dt = 1.0/60;
@@ -274,7 +309,7 @@ void Display::draw(std::vector<Player> players, Ball ball)
         draw_ball(ball);
         
         SDL_RenderPresent(gRenderer);
-        SDL_UpdateWindowSurface(gWindow);        
+        SDL_UpdateWindowSurface(gWindow);
     }    
 }
 

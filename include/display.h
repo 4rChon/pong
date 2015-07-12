@@ -14,13 +14,16 @@ class Display
         int HEIGHT;
         SDL_Renderer* gRenderer;
         SDL_Window* gWindow;
+        SDL_Texture* gBackgroundTexture;
         SDL_Surface* gScreenSurface;
-        SDL_Surface* gPlayer;
+        
+        SDL_Rect SrcR;
+        SDL_Rect DestR;
         
         bool init();
     public:
         Display(int width, int height);
-        bool loadMedia();
+        //bool loadMedia();
         SDL_Texture* loadTexture(std::string path);
         void close();
         void draw_field();

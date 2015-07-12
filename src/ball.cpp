@@ -47,6 +47,11 @@ void Ball::set_velocity(double x_vel, double y_vel)
     this->y_vel = y_vel;
 }
 
+void Ball::set_sprite(SDL_Texture* sprite)
+{
+    this->sprite = sprite;
+}
+
 double Ball::get_x()
 {
     return this->x;
@@ -71,6 +76,11 @@ int Ball::get_size()
     return this->size;
 }
 
+SDL_Texture* Ball::get_sprite()
+{
+    return this->sprite;
+}
+
 void Ball::toggle_x_vel()
 {
     this->x_vel *= -1;
@@ -88,6 +98,7 @@ void Ball::reset(double x, double y)
     this->x_vel = -1;    
     this->y_vel = -2;
 }
+
 
 std::string Ball::toString()
 {
