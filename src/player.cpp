@@ -6,11 +6,10 @@ Player::Player(int id, int x, int y)
     this->id = id;
     this->x = x;
     this->y = y;
-    this->width = 50;
+    this->width = 40;
     this->height = 8;
-    this->velocity = 0;
-    
-    this->sprite = NULL;
+    this->velocity = 0;    
+    this->texture = NULL;
 }
 
 Player::Player(int id, int x, int y, int width, int height)
@@ -20,14 +19,18 @@ Player::Player(int id, int x, int y, int width, int height)
     this->y = y;
     this->width = width;
     this->height = height;
-    this->velocity = 0;
-    
-    this->sprite = NULL;
+    this->velocity = 0;    
+    this->texture = NULL;
 }
 
 void Player::move()
 {
     this->x += int(this->velocity);
+}
+
+void Player::draw()
+{
+   this->texture->render(this->x, this->y);
 }
 
 void Player::set_x(int x)
@@ -40,9 +43,9 @@ void Player::set_y(int y)
     this->y = y;
 }
 
-void Player::set_sprite(SDL_Texture* sprite)
+void Player::set_texture(Texture* texture)
 {
-    this->sprite = sprite;
+    this->texture = texture;
 }
 
 void Player::set_velocity(double velocity)
@@ -75,14 +78,9 @@ double Player::get_velocity() const
     return this->velocity;
 }
 
-SDL_Texture* Player::get_sprite()
-{
-    return this->sprite;
-}
-
-std::string Player::toString() const
+std::string Player::to_string() const
 {
     std::ostringstream s;
-    s << "Player " << this->id << ": " << this->x << ", " << this->y << " | Speed: " << this->velocity;
+    s << "Player " << this->id << ": " << this->x << ", " << this->y << " | Speed: " << this->velocity << " | Texture Address: " << &this->texture;
     return s.str();
 }

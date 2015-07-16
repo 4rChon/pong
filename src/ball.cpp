@@ -27,6 +27,11 @@ void Ball::move()
     this->y += this->y_vel;
 }
 
+void Ball::draw()
+{
+   this->texture->render(this->x, this->y);
+}
+
 void Ball::set_x(double x)
 {
     this->x = x;
@@ -47,9 +52,9 @@ void Ball::set_velocity(double x_vel, double y_vel)
     this->y_vel = y_vel;
 }
 
-void Ball::set_sprite(SDL_Texture* sprite)
+void Ball::set_texture(Texture* texture)
 {
-    this->sprite = sprite;
+    this->texture = texture;
 }
 
 double Ball::get_x()
@@ -74,11 +79,6 @@ double Ball::get_y_vel()
 int Ball::get_size()
 {
     return this->size;
-}
-
-SDL_Texture* Ball::get_sprite()
-{
-    return this->sprite;
 }
 
 void Ball::toggle_x_vel()

@@ -41,5 +41,6 @@ add_executable(pong
     src/display.cpp
     src/player.cpp
     src/ball.cpp
+    src/texture.cpp
 )
 target_link_libraries(pong ${SDL_LIBRARIES})
