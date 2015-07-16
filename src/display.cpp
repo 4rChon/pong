@@ -4,6 +4,8 @@
 #include <iostream>
 #include <stdio.h>
 
+constexpr double PI = acos(-1);
+
 Display::Display(int WIDTH, int HEIGHT)
 {
     this->WIDTH = WIDTH;
@@ -79,7 +81,7 @@ SDL_Texture* Display::loadTexture(std::string path)
         return newTexture;
     }
 
-    newTexture=SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
+    newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
 
     if(!newTexture)
     {
@@ -106,9 +108,6 @@ void Display::close()
 
 void Display::draw_player(Player player)
 {
-    //SDL_Rect fillRect = {player.get_x(), player.get_y(), player.get_width(), player.get_height()};
-    //SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    //SDL_RenderFillRect(gRenderer, &fillRect);    
     SrcR.x = 0;
     SrcR.y = 0;
     SrcR.w = player.get_width();
@@ -122,10 +121,6 @@ void Display::draw_player(Player player)
 
 void Display::draw_ball(Ball ball)
 {
-    //SDL_Rect fillRect = {int(ball.get_x()), int(ball.get_y()), ball.get_size(), ball.get_size()};
-    //SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-    //SDL_RenderFillRect(gRenderer, &fillRect);
-
     SrcR.x = 0;
     SrcR.y = 0;
     SrcR.w = ball.get_size();
@@ -136,7 +131,7 @@ void Display::draw_ball(Ball ball)
     DestR.h = ball.get_size();
     SDL_RenderCopy(gRenderer, ball.get_sprite(), &SrcR, &DestR);
 
-    // Do not release the lasers
+    // Remove comment for lasers
     /*SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
     if(ball.get_y_vel() > 0)
     {
@@ -160,8 +155,6 @@ void Display::draw_field()
     DestR.y = 0;
     DestR.w = WIDTH;
     DestR.h = HEIGHT;
-    //SDL_SetRenderDrawColor(gRenderer, 0xAA, 0xAA, 0xAA, 0xFF);
-    //SDL_RenderDrawLine(gRenderer, 0, int(HEIGHT/2), WIDTH, int(HEIGHT/2));
     SDL_RenderCopy(gRenderer, this->gBackgroundTexture, &SrcR, &DestR);
 }
 
@@ -275,6 +268,8 @@ void Display::draw(std::vector<Player> players, Ball ball)
         
         draw_field();
         
+        /* collision detection */
+        
         for(std::size_t i = 0; i < players.size(); i++)
         {
             if(players[i].get_x() + players[i].get_velocity() <= (this->WIDTH-players[i].get_width()) && players[i].get_x() + players[i].get_velocity() >= 0)
@@ -284,13 +279,44 @@ void Display::draw(std::vector<Player> players, Ball ball)
                     players[i].set_x(WIDTH-players[i].get_width());
                 else
                     players[i].set_x(0);
+                
+            int ball_center_x = ball.get_x() + (ball.get_size()/2);
+            int ball_center_y = ball.get_y() + (ball.get_size()/2);
             
-            int x_dist = (ball.get_x() + (ball.get_size()/2)) - (players[i].get_x() + (players[i].get_width()/2));
-            int y_dist = (ball.get_y() + (ball.get_size()/2)) - (players[i].get_y() + (players[i].get_height()/2));
+            int player_center_x = players[i].get_x() + (players[i].get_width()/2);
+            int player_center_y = players[i].get_y() + (players[i].get_height()/2);
             
-            if(std::abs(x_dist) < ball.get_size()/2 + players[i].get_width()/2 && std::abs(y_dist) < ball.get_size()/2 + players[i].get_height()/2)
+            int x_dist = ball_center_x - player_center_x;
+            int y_dist = ball_center_y - player_center_y;
+            
+            //if distance between the centers of two rectangles is less than the sum of their sizes then:
+            if(std::abs(x_dist) < (ball.get_size()/2) + (players[i].get_width()/2) && std::abs(y_dist) < (ball.get_size()/2) + (players[i].get_height()/2))
             {
-                ball.toggle_y_vel();
+                /* get angle */
+                double angle_i = std::abs(atan2(double(players[i].get_height()/2), double(players[i].get_width()/2)) * 180 / PI);
+                double angle_o;                
+                
+                if(ball.get_y_vel() < 0)
+                    angle_o = std::abs(atan2(double(ball_center_y - player_center_y + ball.get_size()/2), double(ball_center_x - player_center_x)) * 180 / PI);    
+                else
+                    angle_o = std::abs(atan2(double(ball_center_y - player_center_y - ball.get_size()/2), double(ball_center_x - player_center_x)) * 180 / PI);    
+                
+                if(angle_o > angle_i)
+                {
+                    if(ball.get_y_vel() < 0)
+                        ball.set_y(players[i].get_y() + players[i].get_height());
+                    else
+                        ball.set_y(players[i].get_y() - players[i].get_height());
+                    ball.toggle_y_vel();
+                }
+                else
+                {
+                    if(ball.get_x_vel() < 0)
+                        ball.set_x(players[i].get_x() + players[i].get_width());
+                    else
+                        ball.set_x(players[i].get_x());
+                    ball.toggle_x_vel();
+                }
                 ball.set_velocity(ball.get_x_vel() + players[i].get_velocity() + (0.05 * x_dist), ball.get_y_vel() * 1.05);
                 std::cout << ball.toString() << std::endl;
             }

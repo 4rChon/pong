@@ -7,7 +7,7 @@ Ball::Ball(double x, double y)
     this->y = y;
     this->x_vel = 0;
     this->y_vel = 0;
-    this->size = 3;    
+    this->size = 5;    
     this->max_vel = 8;
 }
 
