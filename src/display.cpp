@@ -62,51 +62,6 @@ bool Display::init()
     return true;    
 }
 
-SDL_Surface* Display::loadSurface(std::string path)
-{
-    SDL_Surface* optimizedSurface = NULL;
-    SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-    if(loadedSurface == NULL)
-    {
-        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());
-        return optimizedSurface;
-    }
-    
-    optimizedSurface = SDL_ConvertSurface(loadedSurface, gScreenSurface->format, 0);
-    if(optimizedSurface == NULL)
-    {
-        printf("Unable to optimize image %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-        return optimizedSurface;
-    }
-    
-    SDL_FreeSurface(loadedSurface);
-    return optimizedSurface;
-}
-
-SDL_Texture* Display::loadTexture(std::string path)
-{
-    SDL_Texture* newTexture = NULL;
-    
-    SDL_Surface* loadedSurface = IMG_Load(path.c_str());
-    if(!loadedSurface)
-    {
-        printf("Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError());        
-        return newTexture;
-    }
-
-    newTexture = SDL_CreateTextureFromSurface(gRenderer, loadedSurface);
-
-    if(!newTexture)
-    {
-        printf("Unable to create texture from %s! SDL Error: %s\n", path.c_str(), SDL_GetError());
-        return newTexture;
-    }
-
-    SDL_FreeSurface(loadedSurface);        
-
-    return newTexture;
-}
-
 void Display::close()
 {
     SDL_DestroyRenderer(gRenderer);
@@ -121,26 +76,6 @@ void Display::close()
     IMG_Quit();
     SDL_Quit();
 }
-
-/*void Display::draw_ball(Ball ball)
-{
-    SDL_Rect SrcR = {0, 0, ball.get_size(), ball.get_size()};
-    SDL_Rect DestR = {int(ball.get_x()), int(ball.get_y()), ball.get_size(), ball.get_size()};
-    SDL_RenderCopy(gRenderer, ball.get_sprite(), &SrcR, &DestR);
-
-    // Remove comment for lasers
-    /*SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
-    if(ball.get_y_vel() > 0)
-    {
-        int dist = int((HEIGHT - ball.get_y()) * ball.get_x_vel()/ball.get_y_vel());
-        SDL_RenderDrawLine(gRenderer, int(ball.get_x()) + ball.get_size()/2, int(ball.get_y()) + ball.get_size()/2, int(ball.get_x()) + ball.get_size()/2 + dist, HEIGHT);
-    }
-    else
-    {
-        int dist = int((ball.get_y()) * ball.get_x_vel()/ball.get_y_vel());
-        SDL_RenderDrawLine(gRenderer, int(ball.get_x()) + ball.get_size()/2, int(ball.get_y()) + ball.get_size()/2, int(ball.get_x()) + ball.get_size()/2 - dist, 0);
-    }
-}*/
 
 void Display::draw_field()
 {
@@ -324,5 +259,6 @@ void Display::draw(std::vector<Player> players, Ball ball)
         SDL_RenderPresent(gRenderer);
     }   
     playerTexture.free(); 
+    ballTexture.free();
 }
 
