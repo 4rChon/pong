@@ -1,6 +1,5 @@
 # Pong
 
-## TO DO:
 ##### TO DO:
 * Track Score
 * Randomize Starting Ball Velocity
