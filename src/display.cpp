@@ -276,9 +276,9 @@ void Display::draw(std::vector<Player> players, Ball ball)
                 players[i].move();
             else
                 if(players[i].get_velocity() > 0)
-                    players[i].set_x(WIDTH-players[i].get_width());
+                    players[i].set_x(WIDTH-players[i].get_width()-2);
                 else
-                    players[i].set_x(0);
+                    players[i].set_x(2);
                 
             int ball_center_x = ball.get_x() + (ball.get_size()/2);
             int ball_center_y = ball.get_y() + (ball.get_size()/2);
