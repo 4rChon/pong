@@ -91,6 +91,8 @@ void Display::draw(std::vector<Player> players, Ball ball)
     }
     
     Texture playerTexture = Texture("../res/player/player.png", gRenderer);
+    Texture playerLeftTexture = Texture("../res/player/player_left.png", gRenderer);
+    Texture playerRightTexture = Texture("../res/player/player_right.png", gRenderer);
     Texture ballTexture = Texture("../res/ball/ball.png", gRenderer);
     Texture backgroundTexture = Texture("../res/background/field.png", gRenderer);
     for(std::size_t i = 0; i < players.size(); i++)
@@ -138,13 +140,29 @@ void Display::draw(std::vector<Player> players, Ball ball)
                 {
                     switch(e.key.keysym.sym)
                     {
-                        case SDLK_LEFT: players[0].set_velocity(-1 * velocity);
+                        case SDLK_LEFT: 
+                        {                            
+                            players[0].set_texture(&playerLeftTexture);
+                            players[0].set_velocity(-1 * velocity);
+                        }
                         break;
-                        case SDLK_RIGHT: players[0].set_velocity(velocity);
+                        case SDLK_RIGHT: 
+                        {
+                            players[0].set_texture(&playerRightTexture);
+                            players[0].set_velocity(velocity);
+                        }
                         break;
-                        case SDLK_a: players[1].set_velocity(-1 * velocity);
+                        case SDLK_a: 
+                        {
+                            players[1].set_texture(&playerLeftTexture);
+                            players[1].set_velocity(-1 * velocity);
+                        }
                         break;
-                        case SDLK_d: players[1].set_velocity(velocity);
+                        case SDLK_d: 
+                        {
+                            players[1].set_texture(&playerRightTexture);
+                            players[1].set_velocity(velocity);
+                        }
                         break;
                         default:
                             break;
@@ -157,19 +175,31 @@ void Display::draw(std::vector<Player> players, Ball ball)
                     {
                         case SDLK_LEFT:
                             if(players[0].get_velocity() < 0)
-                                players[0].set_velocity(0);
+                            {
+                                players[0].set_texture(&playerTexture);
+                                players[0].set_velocity(0);                                                            
+                            }
                             break;
                         case SDLK_RIGHT:
                             if(players[0].get_velocity() > 0)
+                            {
+                                players[0].set_texture(&playerTexture);
                                 players[0].set_velocity(0);
+                            }
                             break;
                         case SDLK_a:
                             if(players[1].get_velocity() < 0)
+                            {
+                                players[1].set_texture(&playerTexture);
                                 players[1].set_velocity(0);
+                            }
                             break;
                         case SDLK_d:
                             if(players[1].get_velocity() > 0)
+                            {
+                                players[1].set_texture(&playerTexture);
                                 players[1].set_velocity(0);
+                            }
                             break;
                         default:
                            break;
@@ -202,7 +232,7 @@ void Display::draw(std::vector<Player> players, Ball ball)
                     players[i].set_x(2);
                 
             int ball_center_x = ball.get_x() + (ball.get_size()/2);
-            int ball_center_y = ball.get_y() + (ball.get_size()/2);
+            int ball_center_y = ball.get_y() + (ball.get_size()/2);                
             
             int player_center_x = players[i].get_x() + (players[i].get_width()/2);
             int player_center_y = players[i].get_y() + (players[i].get_height()/2);
@@ -217,11 +247,13 @@ void Display::draw(std::vector<Player> players, Ball ball)
                 double angle_i = std::abs(atan2(double(players[i].get_height()/2), double(players[i].get_width()/2)) * 180 / PI);
                 double angle_o;                
                 
+                /* y direction of ball */
                 if(ball.get_y_vel() < 0)
                     angle_o = std::abs(atan2(double(ball_center_y - player_center_y + ball.get_size()/2), double(ball_center_x - player_center_x)) * 180 / PI);    
                 else
                     angle_o = std::abs(atan2(double(ball_center_y - player_center_y - ball.get_size()/2), double(ball_center_x - player_center_x)) * 180 / PI);    
                 
+                /* angle of incidence of collision */
                 if(angle_o > angle_i)
                 {
                     if(ball.get_y_vel() < 0)
@@ -259,6 +291,8 @@ void Display::draw(std::vector<Player> players, Ball ball)
         SDL_RenderPresent(gRenderer);
     }   
     playerTexture.free(); 
+    playerLeftTexture.free();
+    playerRightTexture.free();
     ballTexture.free();
 }
 

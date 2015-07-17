@@ -6,7 +6,7 @@ Player::Player(int id, int x, int y)
     this->id = id;
     this->x = x;
     this->y = y;
-    this->width = 40;
+    this->width = 50;
     this->height = 8;
     this->velocity = 0;    
     this->texture = NULL;
