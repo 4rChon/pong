@@ -20,7 +20,10 @@ Texture::Texture(SDL_Renderer* gRenderer)
 
 Texture::Texture(std::string path, SDL_Renderer* gRenderer)
 {
+    this->texture = NULL;
     this->renderer = gRenderer;
+    this->width = 0;
+    this->height = 0;
     loadFromFile(path);
 }
 
@@ -90,7 +93,7 @@ void Texture::free()
 {
     if(this->texture)
     {
-        SDL_DestroyTexture(texture);        
+        SDL_DestroyTexture(texture);
         this->texture = NULL;
         this->width = 0;
         this->height = 0;

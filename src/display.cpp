@@ -1,7 +1,5 @@
 #include <display.h>
-//#include <text.h>
 #include <texture.h>
-//#include <util.h>
 #include <ctime>
 #include <cmath>
 #include <iostream>
@@ -192,18 +190,6 @@ void Display::draw(std::vector<Player> players, Ball ball)
                             players[0].set_velocity(velocity);
                         }
                         break;
-                        case SDLK_a: 
-                        {
-                            players[1].set_texture(&playerLeftTexture);
-                            players[1].set_velocity(-1 * velocity);
-                        }
-                        break;
-                        case SDLK_d: 
-                        {
-                            players[1].set_texture(&playerRightTexture);
-                            players[1].set_velocity(velocity);
-                        }
-                        break;
                         default:
                             break;
                     }                    
@@ -227,20 +213,6 @@ void Display::draw(std::vector<Player> players, Ball ball)
                                 players[0].set_velocity(0);
                             }
                             break;
-                        case SDLK_a:
-                            if(players[1].get_velocity() < 0)
-                            {
-                                players[1].set_texture(&playerTexture);
-                                players[1].set_velocity(0);
-                            }
-                            break;
-                        case SDLK_d:
-                            if(players[1].get_velocity() > 0)
-                            {
-                                players[1].set_texture(&playerTexture);
-                                players[1].set_velocity(0);
-                            }
-                            break;
                         default:
                            break;
                     }
@@ -259,8 +231,69 @@ void Display::draw(std::vector<Player> players, Ball ball)
         
         gBackgroundTexture->render(0, 0);
         
-        /* collision detection */
+        /* ball movement detection */
+        SDL_SetRenderDrawColor(gRenderer, 0xFF, 0x00, 0x00, 0xFF);
         
+        double ball_center_x = ball.get_x() + (ball.get_size()/2);
+        double ball_center_y = ball.get_y() + (ball.get_size()/2);
+        double tanTheta = ball.get_x_vel()/ball.get_y_vel();
+        //double height_mod = 0;
+        double width_mod = 0;
+        double dist = 0;
+
+        if(ball.get_y_vel() > 0)
+        {
+            dist = (HEIGHT - ball_center_y) * tanTheta;
+            //height_mod = HEIGHT;            
+        }
+        else
+            dist = -1 * ball_center_y * tanTheta;
+        
+        //double gradient = (ball_center_y - height_mod) / (ball_center_x - (ball_center_x + dist));
+        //double intercept = ball_center_y - (gradient * ball_center_x);
+        //double y2 = intercept;                    
+        
+//        SDL_RenderDrawLine(gRenderer,
+//                           round(ball_center_x),
+//                           round(ball_center_y),
+//                           round(ball_center_x + dist),
+//                           round(height_mod));
+        
+        
+        if(ball.get_x() + (ball.get_size()/2) + dist > WIDTH)
+            width_mod = WIDTH;
+        
+        //y2 = (gradient * width_mod) + intercept;
+        
+//        SDL_RenderDrawLine(gRenderer,
+//                           width_mod,
+//                           round(y2),
+//                           round((2 * width_mod) - (ball_center_x + dist)),
+//                           round(height_mod));
+        
+        double final_x = 0;
+        if(ball_center_x + dist <= WIDTH && ball_center_x + dist >= 0)
+            final_x = ball_center_x + dist;
+        else final_x = (2 * width_mod) - (ball_center_x + dist);
+        
+        /* artificial intelligence */
+        if(final_x < players[1].get_x() + players[1].get_width()/10)
+        {
+            players[1].set_texture(&playerLeftTexture);
+            players[1].set_velocity(-1 * velocity);
+        }
+        else if(final_x > players[1].get_x() + players[1].get_width() - players[1].get_width()/10)
+        {
+            players[1].set_texture(&playerRightTexture);
+            players[1].set_velocity(velocity);
+        }
+        else
+        {
+            players[1].set_texture(&playerTexture);
+            players[1].set_velocity(0);
+        }
+        
+        /* collision detection */        
         for(std::size_t i = 0; i < players.size(); i++)
         {
             /* restrict x-axis movement range */
@@ -272,9 +305,7 @@ void Display::draw(std::vector<Player> players, Ball ball)
                 else
                     players[i].set_x(2);
             
-            /* assign variables to reduce code repetition */
-            double ball_center_x = ball.get_x() + (ball.get_size()/2);
-            double ball_center_y = ball.get_y() + (ball.get_size()/2);                
+            /* assign variables to reduce code repetition */        
             
             double player_center_x = players[i].get_x() + (players[i].get_width()/2);
             double player_center_y = players[i].get_y() + (players[i].get_height()/2);
