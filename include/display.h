@@ -1,9 +1,11 @@
 #pragma once
 
-#include <player.h>
 #include <ball.h>
+#include <player.h>
+#include <text.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_Image.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 #include <string>
 #include <vector>
 
@@ -14,20 +16,17 @@ class Display
         int HEIGHT;
         SDL_Renderer* gRenderer;
         SDL_Window* gWindow;
-        Texture* gBackgroundTexture;
+        TTF_Font *gFont;
         SDL_Surface* gScreenSurface;
-        
-        SDL_Rect SrcR;
-        SDL_Rect DestR;
+        Texture* gBackgroundTexture;
+        Texture* gTextTexture;
         
         bool init();
     public:
         Display(int width, int height);
         SDL_Surface* loadSurface(std::string path);
         SDL_Texture* loadTexture(std::string path);
+        bool loadMedia();
         void close();
-        void draw_field();
-        void draw_player(Player player);
-        void draw_ball(Ball ball);
         void draw(std::vector<Player> players, Ball ball);
 };

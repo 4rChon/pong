@@ -1,7 +1,7 @@
 #include <player.h>
 #include <sstream>
 
-Player::Player(int id, int x, int y)
+Player::Player(int id, double x, double y)
 {
     this->id = id;
     this->x = x;
@@ -12,7 +12,7 @@ Player::Player(int id, int x, int y)
     this->texture = NULL;
 }
 
-Player::Player(int id, int x, int y, int width, int height)
+Player::Player(int id, double x, double y, int width, int height)
 {
     this->id = id;
     this->x = x;
@@ -25,7 +25,7 @@ Player::Player(int id, int x, int y, int width, int height)
 
 void Player::move()
 {
-    this->x += int(this->velocity);
+    this->x += this->velocity;
 }
 
 void Player::draw()
@@ -33,12 +33,12 @@ void Player::draw()
    this->texture->render(this->x, this->y);
 }
 
-void Player::set_x(int x)
+void Player::set_x(double x)
 {
     this->x = x;
 }
 
-void Player::set_y(int y)
+void Player::set_y(double y)
 {
     this->y = y;
 }
@@ -53,12 +53,12 @@ void Player::set_velocity(double velocity)
     this->velocity = velocity;    
 }
 
-int Player::get_x() const
+double Player::get_x() const
 {
     return this->x;
 }
 
-int Player::get_y() const
+double Player::get_y() const
 {
     return this->y;
 }

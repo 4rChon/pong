@@ -1,9 +1,13 @@
 #include <display.h>
+//#include <text.h>
 #include <texture.h>
+//#include <util.h>
 #include <ctime>
 #include <cmath>
 #include <iostream>
 #include <stdio.h>
+#include <string>
+#include <sstream>
 
 constexpr double PI = acos(-1);
 
@@ -15,6 +19,8 @@ Display::Display(int WIDTH, int HEIGHT)
     this->gWindow = NULL;
     this->gBackgroundTexture = NULL;
     this->gScreenSurface = NULL;
+    this->gFont = NULL;
+    this->gTextTexture = NULL;
 }
 
 bool Display::init()
@@ -57,29 +63,46 @@ bool Display::init()
         return false;
     }
     
+    if(TTF_Init() == -1)
+    {
+        printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+        return false;
+    }
+    
     gScreenSurface = SDL_GetWindowSurface(gWindow);
     
     return true;    
 }
 
+bool Display::loadMedia()
+{
+    this->gFont = TTF_OpenFont("../res/fonts/consolab.ttf", 50);
+    if(!this->gFont)
+    {
+        printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
+        return false;
+    }
+    return true;
+}
+
 void Display::close()
 {
     SDL_DestroyRenderer(gRenderer);
-    gBackgroundTexture->free();
     SDL_DestroyWindow(gWindow);
     SDL_FreeSurface(gScreenSurface);
-    gRenderer = NULL;
-    gBackgroundTexture = NULL;
-    gWindow = NULL;
-    gScreenSurface = NULL;
     
+    TTF_CloseFont(this->gFont);
+    
+    this->gRenderer = NULL;
+    this->gWindow = NULL;
+    this->gBackgroundTexture = NULL;
+    this->gScreenSurface = NULL;
+    this->gFont = NULL;
+    this->gTextTexture = NULL;
+    
+    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
-}
-
-void Display::draw_field()
-{
-    gBackgroundTexture->render(0, 0);
 }
 
 void Display::draw(std::vector<Player> players, Ball ball)
@@ -89,6 +112,13 @@ void Display::draw(std::vector<Player> players, Ball ball)
         printf("Failed to initialize!\n");
         return;
     }
+    
+    int player1 = 0;
+    int player2 = 0;
+    
+    /* load textures */
+    Texture textTexture = Texture(gRenderer);
+    this->gTextTexture = &textTexture;
     
     Texture playerTexture = Texture("../res/player/player.png", gRenderer);
     Texture playerLeftTexture = Texture("../res/player/player_left.png", gRenderer);
@@ -102,12 +132,22 @@ void Display::draw(std::vector<Player> players, Ball ball)
     ball.set_texture(&ballTexture);
     this->gBackgroundTexture = &backgroundTexture;
     
+    if(!loadMedia())
+        printf("Failed to load media!\n");
+    else
+        printf("Media Loaded\n");
+    
+    /* physics */    
     double t = 0.0;
     const double dt = 1.0/60;
     
     Uint32 currentTime = SDL_GetTicks();
     double accumulator = 0.0;    
     double velocity = 0.0;
+    
+    /* init teams */
+    //Team team1 = Team(players[0]);
+    //Team team2 = Team(players[1]);
     
     bool quit = false;
     
@@ -217,12 +257,13 @@ void Display::draw(std::vector<Player> players, Ball ball)
         
         //printf("FPS: %d\n", int(1000.0/frameTime));
         
-        draw_field();
+        gBackgroundTexture->render(0, 0);
         
         /* collision detection */
         
         for(std::size_t i = 0; i < players.size(); i++)
         {
+            /* restrict x-axis movement range */
             if(players[i].get_x() + players[i].get_velocity() <= (this->WIDTH-players[i].get_width()) && players[i].get_x() + players[i].get_velocity() >= 0)
                 players[i].move();
             else
@@ -230,28 +271,39 @@ void Display::draw(std::vector<Player> players, Ball ball)
                     players[i].set_x(WIDTH-players[i].get_width()-2);
                 else
                     players[i].set_x(2);
-                
-            int ball_center_x = ball.get_x() + (ball.get_size()/2);
-            int ball_center_y = ball.get_y() + (ball.get_size()/2);                
             
-            int player_center_x = players[i].get_x() + (players[i].get_width()/2);
-            int player_center_y = players[i].get_y() + (players[i].get_height()/2);
+            /* assign variables to reduce code repetition */
+            double ball_center_x = ball.get_x() + (ball.get_size()/2);
+            double ball_center_y = ball.get_y() + (ball.get_size()/2);                
             
-            int x_dist = ball_center_x - player_center_x;
-            int y_dist = ball_center_y - player_center_y;
+            double player_center_x = players[i].get_x() + (players[i].get_width()/2);
+            double player_center_y = players[i].get_y() + (players[i].get_height()/2);
+            
+            double x_dist = round(ball_center_x - player_center_x);
+            double y_dist = round(ball_center_y - player_center_y);
             
             //if distance between the centers of two rectangles is less than the sum of their sizes then:
-            if(std::abs(x_dist) < (ball.get_size()/2) + (players[i].get_width()/2) && std::abs(y_dist) < (ball.get_size()/2) + (players[i].get_height()/2))
+            if(
+                std::abs(round(x_dist)) < (ball.get_size()/2) + (players[i].get_width()/2) && 
+                std::abs(round(y_dist)) < (ball.get_size()/2) + (players[i].get_height()/2)
+            )
             {
-                /* get angle */
-                double angle_i = std::abs(atan2(double(players[i].get_height()/2), double(players[i].get_width()/2)) * 180 / PI);
+                /* get angle from center to corner*/
+                double angle_i = std::abs(atan(double(players[i].get_height()/2) / double(players[i].get_width()/2)) * 180 / PI);
                 double angle_o;                
                 
+                //printf("Angle_i: %.2f | %.2f/%.2f\n", angle_i, double(players[i].get_height()/2), double(players[i].get_width()/2));
                 /* y direction of ball */
                 if(ball.get_y_vel() < 0)
-                    angle_o = std::abs(atan2(double(ball_center_y - player_center_y + ball.get_size()/2), double(ball_center_x - player_center_x)) * 180 / PI);    
+                    angle_o = std::abs(atan((y_dist + (ball.get_size()/2)) / x_dist) * 180 / PI);
                 else
-                    angle_o = std::abs(atan2(double(ball_center_y - player_center_y - ball.get_size()/2), double(ball_center_x - player_center_x)) * 180 / PI);    
+                    angle_o = std::abs(atan((y_dist - (ball.get_size()/2)) / x_dist) * 180 / PI);
+                
+                //printf("Angle_o: %.2f | %.2f/%.2f\n", angle_o, y_dist + (ball.get_size()/2), x_dist);
+                //printf("Angle_o: %.2f | %.2f/%.2f\n", angle_o, y_dist - (ball.get_size()/2), x_dist);
+            
+                //printf("x_dist = %.1f, %.2f\n", round(x_dist), x_dist);
+                //printf("y_dist = %.1f, %.2f\n", round(y_dist), y_dist);
                 
                 /* angle of incidence of collision */
                 if(angle_o > angle_i)
@@ -277,22 +329,49 @@ void Display::draw(std::vector<Player> players, Ball ball)
             players[i].draw();
         }
         
-        if(ball.get_x() + ball.get_x_vel() <= (this->WIDTH-ball.get_size()) && ball.get_x() + ball.get_x_vel() >= 0)
-                ball.move();
-            else
-                ball.toggle_x_vel();
-        if(ball.get_y() + ball.get_y_vel() <= (this->HEIGHT-ball.get_size()) && ball.get_y() + ball.get_y_vel() >= 0)
-                ball.move();
-            else
-                ball.reset(WIDTH/2, HEIGHT/2);
+        /* bump off the sides */
+        if(ball.get_x() + ball.get_x_vel() <= this->WIDTH-ball.get_size() && 
+           ball.get_x() + ball.get_x_vel() >= 0)
+            ball.move();
+        else
+            ball.toggle_x_vel();
+        
+        /* check score */
+        if(ball.get_y() + ball.get_y_vel() > this->HEIGHT-ball.get_size())
+        {
+            player1++;
+            ball.reset(WIDTH/2, HEIGHT/2);
+        }
+        else if(ball.get_y() + ball.get_y_vel() < 0) 
+        {
+            player2++;
+            ball.reset(WIDTH/2, HEIGHT/2);
+        }
+        else
+            ball.move();
             
         ball.draw();
+        
+        
+        SDL_Color textColor = {255, 255, 255, 0};
+        
+        std::ostringstream player1stream;        
+        player1stream << player1;
+        this->gTextTexture->loadFromRenderedText(this->gFont, player1stream.str(), textColor);
+        gTextTexture->render(WIDTH - gTextTexture->get_width() - 10, (HEIGHT - gTextTexture->get_height())/2 - 25);
+        
+        std::ostringstream player2stream;
+        player2stream << player2;
+        this->gTextTexture->loadFromRenderedText(this->gFont, player2stream.str(), textColor);
+        gTextTexture->render(10, (HEIGHT - gTextTexture->get_height())/2 + 30);        
         
         SDL_RenderPresent(gRenderer);
     }   
     playerTexture.free(); 
     playerLeftTexture.free();
     playerRightTexture.free();
+    backgroundTexture.free();
+    textTexture.free();    
     ballTexture.free();
 }
 
